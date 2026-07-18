@@ -15,6 +15,10 @@ def scan_port(target_ip, port):
     finally:
         s.close()
 
+def scan_range(target_ip, start_port, end_port):
+    for port in range(start_port, end_port + 1):
+        scan_port(target_ip, port)
+
 # Test run
 target = "scanme.nmap.org"
-scan_port(target, 443)
+scan_range(target, 20, 25)
