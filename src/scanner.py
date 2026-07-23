@@ -1,5 +1,6 @@
 import socket
 import argparse
+import threading
 
 def scan_port(target_ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,8 +18,15 @@ def scan_port(target_ip, port):
         s.close()
 
 def scan_range(target_ip, start_port, end_port):
+    threads = []
+
     for port in range(start_port, end_port + 1):
-        scan_port(target_ip, port)
+        t = threading.Thread(target=scan_port, args=(target_ip, port))
+        threads.append(t)
+        t.start()
+        
+    for t in threads:
+        t.join()
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="A simple TCP port scanner")
