@@ -1,6 +1,7 @@
 import socket
 import argparse
-import threading
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 def scan_port(target_ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,15 +19,11 @@ def scan_port(target_ip, port):
         s.close()
 
 def scan_range(target_ip, start_port, end_port):
-    threads = []
+    ports = range(start_port, end_port + 1)
+    scan_with_target = partial(scan_port, target_ip)
 
-    for port in range(start_port, end_port + 1):
-        t = threading.Thread(target=scan_port, args=(target_ip, port))
-        threads.append(t)
-        t.start()
-        
-    for t in threads:
-        t.join()
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        executor.map(scan_with_target, ports)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="A simple TCP port scanner")
