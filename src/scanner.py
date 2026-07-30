@@ -10,13 +10,25 @@ def scan_port(target_ip, port):
     try:
         result = s.connect_ex((target_ip, port))
         if result == 0:
-            print(f"Port {port} is OPEN")
+            banner = grab_banner(s)
+            if banner:
+                print(f"Port {port} is OPEN | Banner: {banner}")
+            else:
+                print(f"Port {port} is OPEN | No Banner received")
         else:
             print(f"Port {port} is CLOSED")
     except socket.timeout:
         print(f"Port {port} is FILTERED")
     finally:
         s.close()
+
+def grab_banner(s):
+    try:
+        s.settimeout(1)
+        banner = s.recv(1024)
+        return banner.decode(errors="ignore").strip()
+    except socket.timeout:
+        return None
 
 def scan_range(target_ip, start_port, end_port):
     ports = range(start_port, end_port + 1)
